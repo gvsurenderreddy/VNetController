@@ -1,0 +1,30 @@
+{
+	"name": "vnetcontroller",
+	"description": "virtual network controller (vnc) provides the Virtual Network topology and services . Provides the RESTAPI for UI ",
+	"version": "0.0.1",
+	"author": "Suresh Kumar",	
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/sureshkvl/vnc.git"
+	},
+	"dependencies": {
+	"stormdata": ">=1.2.0",
+	"stormregistry": ">=1.2.0",
+	"zappajs":"*",
+	"request-json":"*"
+	},
+	"devDependencies": {
+		"coffee-script": ">=1.3"
+	},
+	"optionalDependencies": {},
+	"engines": {
+		"node": ">=0.6.x"
+	},
+	"main": "./lib/cloudmason",
+	"scripts": {
+		"prepublish": "mkdir -p lib; coffee -o lib -c src"		
+	},
+	"contributors": [
+		""	
+	]
+}
