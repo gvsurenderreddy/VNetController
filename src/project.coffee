@@ -1,11 +1,11 @@
 StormRegistry = require 'stormregistry'
 StormData = require 'stormdata'
 
-class AccountRegistry extends StormRegistry
+class ProjectRegistry extends StormRegistry
     constructor: (filename) ->
         @on 'load', (key,val) ->
             console.log "restoring #{key} with:",val
-            entry = new AccountData key,val
+            entry = new ProjectData key,val
             if entry?
                 entry.saved = true
                 @add entry
@@ -16,7 +16,7 @@ class AccountRegistry extends StormRegistry
         super filename
 
     add: (data) ->
-        return unless data instanceof AccountData
+        return unless data instanceof ProjectData
         entry = super data.id, data
 
     update: (data) ->        
@@ -26,16 +26,16 @@ class AccountRegistry extends StormRegistry
         entry = super key
         return unless entry?
 
-        if entry.data? and entry.data instanceof AccountData
+        if entry.data? and entry.data instanceof ProjectData
             entry.data.id = entry.id
             entry.data
         else
             entry
 
-class AccountData extends StormData
+class ProjectData extends StormData
 
-    AccountSchema =
-        name: "Account"
+    ProjectSchema =
+        name: "Project"
         type: "object"
         additionalProperties: true
         properties:            
@@ -48,28 +48,29 @@ class AccountData extends StormData
             loip_pool:{ type: "string", required: false}            
 
     constructor: (id, data) ->
-        super id, data, AccountSchema
+        super id, data, ProjectSchema
 
 util = require('util')
-class Account
+class Project
 	constructor :(filename) ->
-		@registry = new AccountRegistry filename
+		@registry = new ProjectRegistry filename
 
 	create : (@data, callback)->
 		try			
-			Accdata = new AccountData @data.name, @data
+			Accdata = new ProjectData null, @data
 		catch err
 			util.log "invalid schema" + err
 			return callback new Error "Invalid Input "
 		finally				
 			util.log JSON.stringify Accdata			
 			@registry.add Accdata
-			return callback Accdata.data
+			return callback Accdata
 
 	list: (callback) ->
 		return callback @registry.list()
-
-    get: (id,callback) ->
+    get: (id, callback) ->
         return callback @registry.get(id)
-		
-module.exports = Account
+
+
+instance = new Project '/tmp/projects.db'
+module.exports = instance

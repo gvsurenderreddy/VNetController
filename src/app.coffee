@@ -9,20 +9,17 @@
 
     @enable 'serve jquery', 'minify'
 
-    accountclass = require('./project') 
-    account = new accountclass '/tmp/accounts.db'
-    topologyclass = require('./Topology') 
-    topology = new topologyclass '/tmp/topology.db'
-    #TopologyCtrl = require('./Topology')
+    project = require('./project')     
+    topology = require('./Topology')        
 
     @post '/Project': ->       
         console.log "POST Project received" + JSON.stringify @body        
-        account.create @body, (res) =>
+        project.create @body, (res) =>
             console.log res
             @send res    
     @get '/Project' : ->
         console.log "GET Project received" + JSON.stringify @body        
-        account.list (res) =>
+        project.list (res) =>
             console.log res
             @send res    
 

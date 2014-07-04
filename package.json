@@ -8,8 +8,8 @@
 		"url": "git://github.com/sureshkvl/vnc.git"
 	},
 	"dependencies": {
-	"stormdata": ">=1.2.0",
-	"stormregistry": ">=1.2.0",
+	"stormdata": "*",
+	"stormregistry": "*",
 	"zappajs":"*",
 	"request-json":"*"
 	},
