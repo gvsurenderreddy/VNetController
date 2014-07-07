@@ -3,9 +3,10 @@ StormData = require 'stormdata'
 util = require('util')
 request = require('request-json');
 extend = require('util')._extend
+cloudmasonurl = 'http://localhost:5680/'
 
 
-
+##########################################################################################################
 # utility functions
 subnetting = (net, curprefix, newprefix ) ->
     ip = require 'ip'
@@ -46,7 +47,7 @@ getHwAddress = () ->
     hwaddr
 #utility functions end
 
-
+#####################################################################################################
 
 class TopologyRegistry extends StormRegistry
     constructor: (filename) ->
@@ -80,7 +81,6 @@ class TopologyRegistry extends StormRegistry
             entry
 
 class TopologyData extends StormData
-
     TopologySchema =
         name: "Topology"
         type: "object"
@@ -148,9 +148,7 @@ class TopologyData extends StormData
                                         name:{"type":"string", "required":false}                            
     constructor: (id, data) ->
         super id, data, TopologySchema
-
-
-
+##########################################################################################################
 class IPManager
     constructor :(wan,lan) ->
         util.log "wan pool #{wan} "
@@ -168,6 +166,7 @@ class IPManager
     getFreeLanSubnet:()->
         @lansubnets[@lanindex++]
 
+###################################################################################################
 
 class node
     constructor:(topoid, data) ->
@@ -180,6 +179,8 @@ class node
         @config.projectid = topoid
         #util.log " node config " + JSON.stringify @config        
         @config.ifmap = @ifmap
+        @status = "unknown"
+        @uuid = ""
 
     addLanInterface :(brname, startaddress, subnetmask) ->         
             interf =
@@ -192,16 +193,50 @@ class node
                 "type":"lan"
             @ifmap.push  interf
 
+    addWanInterface :(brname, startaddress, subnetmask) ->         
+            interf =
+                "ifname" : "eth#{@ifindex++}"
+                "hwAddress" : getHwAddress()
+                "brname" : brname
+                "ipaddress": startaddress
+                "netmask" : subnetmask
+                "gateway" : startaddress
+                "type":"wan"
+            @ifmap.push  interf
+
     create : ()->
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(cloudmasonurl)
         client.post '/createVM', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
-            util.log "node result " + JSON.stringify body
-            @status = body.result
+            util.log "node create result " + JSON.stringify body
+            unless body instanceof Error
+                @status = "created"
+                @config = body if body.result?
+                @start()
+
+    start : ()->        
+        client = request.newClient(cloudmasonurl)
+        client.post '/startVM', @config, (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node start result " + JSON.stringify body
+            unless body instanceof Error
+                @config = body if body.result?                
+                
 
     destroy :()->
+        client = request.newClient(cloudmasonurl)
+        client.post '/deleteVM', @config, (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node destroy result " + JSON.stringify body
+            unless body instanceof Error
+                @config = body if body.result?                            
 
     status : ()->
+        client = request.newClient(cloudmasonurl)
+        client.post '/statusVM', @config, (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node statusVM result " + JSON.stringify body
+            return body            
 
     statistics :()->
 
@@ -215,10 +250,15 @@ class switches
         client = request.newClient('http://localhost:5680/')
         client.post '/createswitch', @config, (err, res, body) =>
                 util.log "err" + JSON.stringify err if err?
-                util.log "switches result " + JSON.stringify body
+                util.log "create switches result " + JSON.stringify body
                 @status = body.result
 
     destroy:()->
+        client = request.newClient('http://localhost:5680/')
+        client.post '/deleteSwitch', @config, (err, res, body) =>
+                util.log "err" + JSON.stringify err if err?
+                util.log "delete switches result " + JSON.stringify body
+                @status = body.result        
 
     status:()->
 
@@ -243,19 +283,36 @@ class links
 
 class Topology
 
-    #@switchobj = []
-    #@nodeobj =  []
-    #@subnets = []
+    status :()->
+        arr = []
+        for n in @nodeobj
+            val = n.status()
+            arr.push val
+        return arr
 
     createSwitches :()->
         for sw in @switchobj
             sw.create()
 
+    destroySwitches :()->
+        for sw in @switchobj
+            sw.destroy()
+
     createNodes :()->
         for n in @nodeobj
             n.create()
 
-    connectNode: () ->
+    startNodes: ()->
+        util.log "startNodes"
+        for n in @nodeobj
+            util.log "starting node"
+            n.start()
+
+    destroyNodes: ()->    
+        util.log "destroyNodes"
+        for n in @nodeobj
+            util.log "delete node"
+            n.destroy()
 
     getNodeObjbyName:(name) ->
         for obj in @nodeobj
@@ -269,7 +326,7 @@ class Topology
     constructor :(@tdata) ->
         util.log "Topology class: " + JSON.stringify @tdata       
         util.log "createSwitches "+ JSON.stringify @tdata.data.switches
-
+        @projectid = @tdata.data.projectid
         @switchobj = []
         @nodeobj =  []
         @linksobj = []
@@ -287,32 +344,48 @@ class Topology
             
         for val in @tdata.data.links                        
             x = 0
-            #temp = @ipmgr.getFreeWanSubnet() if val.type is "wan"
             if val.type is "lan"
-                temp = @ipmgr.getFreeLanSubnet() 
-
-                
+                temp = @ipmgr.getFreeLanSubnet()                 
                 for n in  val.connected_nodes
                     obj = @getNodeObjbyName(n.name)
                     if obj?
                         startaddress = temp.iparray[x++]
                         obj.addLanInterface(val.switch, startaddress, temp.subnetMask)
-        
+
+            if val.type is "wan"
+                temp = @ipmgr.getFreeWanSubnet()
+                swname = "#{val.type}_#{val.connected_nodes[0].name}_#{val.connected_nodes[1].name}"
+                util.log "wan swname is "+ swname
+                obj = new switches
+                    name : swname
+                    ports: 2
+                    type : "bridge"                
+                @switchobj.push obj
+                for n in  val.connected_nodes
+                    obj = @getNodeObjbyName(n.name)
+                    if obj?
+                        startaddress = temp.iparray[x++]
+                        obj.addWanInterface(swname, startaddress, temp.subnetMask)
         @createSwitches()
-        @createNodes()        
+        @createNodes()    
+        
+    destroy :()->
+        @destroyNodes()
+        #@destroySwithes()
 
-
+        
 class TopologyMaster
     constructor :(filename) ->
         @registry = new TopologyRegistry filename
+        @topologyobj = []
     
     list : (callback) ->
         return callback @registry.list()
 
-    create : (@data, callback)->
+    create : (data, callback)->
         project = require './project'
         try	            
-            topodata = new TopologyData null, @data
+            topodata = new TopologyData null, data
 
         catch err
             util.log "invalid schema" + err
@@ -321,9 +394,23 @@ class TopologyMaster
             util.log JSON.stringify topodata            
             callback @registry.add topodata
             @obj = new Topology topodata
-            #@createSwitches topodata.data
+            @topologyobj.push @obj
+
     status : (callback) ->
         @obj.status()
+
+    destroy : (data, callback) -> 
+        obj = @getTopologyObj(data.id)
+        obj.destroy() if obj? 
+
+    getTopologyObj:(data) ->
+        for obj in @topologyobj
+            util.log "topologyobj" + obj.projectid
+            if  obj.projectid is data 
+                util.log "getTopologyObj found " + obj.projectid 
+                return obj
+        return null
+
 
   
 

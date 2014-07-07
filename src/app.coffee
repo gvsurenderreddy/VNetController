@@ -34,6 +34,12 @@
         topology.list (res) =>
             console.log res
             @send res    
+
+    @post '/Topologydestroy': ->       
+        console.log "POST Topology received" + JSON.stringify @body        
+        topology.destroy @body, (res) =>
+            console.log res
+            @send res    
 ###
     @put '/node': ->
         switchctrl.listSwitches (res) =>
