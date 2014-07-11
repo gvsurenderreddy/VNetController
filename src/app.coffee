@@ -9,19 +9,8 @@
 
     @enable 'serve jquery', 'minify'
 
-    project = require('./project')     
+    #project = require('./project')     
     topology = require('./Topology')        
-
-    @post '/Project': ->       
-        console.log "POST Project received" + JSON.stringify @body        
-        project.create @body, (res) =>
-            console.log res
-            @send res    
-    @get '/Project' : ->
-        console.log "GET Project received" + JSON.stringify @body        
-        project.list (res) =>
-            console.log res
-            @send res    
 
     @post '/Topology': ->       
         console.log "POST Topology received" + JSON.stringify @body        
@@ -36,11 +25,28 @@
             @send res    
 
     @post '/Topologydestroy': ->       
-        console.log "POST Topology received" + JSON.stringify @body        
+        console.log "POST Topology destroy received" + JSON.stringify @body        
         topology.destroy @body, (res) =>
             console.log res
             @send res    
+    @post '/Topologystatus': ->       
+        console.log "POST Topology status received" + JSON.stringify @body        
+        topology.status @body, (res) =>
+            console.log res
+            @send res    
+
+
 ###
+    @post '/Project': ->       
+        console.log "POST Project received" + JSON.stringify @body        
+        project.create @body, (res) =>
+            console.log res
+            @send res    
+    @get '/Project' : ->
+        console.log "GET Project received" + JSON.stringify @body        
+        project.list (res) =>
+            console.log res
+            @send res    
     @put '/node': ->
         switchctrl.listSwitches (res) =>
             console.log res
