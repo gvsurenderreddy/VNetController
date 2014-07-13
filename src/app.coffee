@@ -9,7 +9,6 @@
 
     @enable 'serve jquery', 'minify'
 
-    #project = require('./project')     
     topology = require('./Topology')        
 
     @post '/Topology': ->       
@@ -24,14 +23,13 @@
             console.log res
             @send res    
 
-    @post '/Topologydestroy': ->       
-        console.log "POST Topology destroy received" + JSON.stringify @body        
-        topology.destroy @body, (res) =>
+    @delete '/Topology/:id': ->       
+        console.log "POST Topology destroy received" 
+        topology.del @params.id, (res) =>
             console.log res
             @send res    
-    @post '/Topologystatus': ->       
-        console.log "POST Topology status received" + JSON.stringify @body        
-        topology.status @body, (res) =>
+    @get '/Topology/:id/status': ->       
+        topology.status @params.id, (res) =>
             console.log res
             @send res    
 

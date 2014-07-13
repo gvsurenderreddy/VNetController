@@ -11,7 +11,8 @@
 	"stormdata": "*",
 	"stormregistry": "*",
 	"zappajs":"*",
-	"request-json":"*"
+	"request-json":"*",
+	"ip":"*"
 	},
 	"devDependencies": {
 		"coffee-script": ">=1.3"

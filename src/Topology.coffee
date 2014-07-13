@@ -5,7 +5,7 @@ request = require('request-json');
 extend = require('util')._extend
 ip = require 'ip'
 vnetbuilderurl = 'http://localhost:5680/'
-vnetprovisionerurl = 'http://localhost:15682/'
+vnetprovisionerurl = 'http://localhost:5681/'
 
 ##########################################################################################################
 # utility functions
@@ -197,6 +197,7 @@ class node
 
         @statistics = {}
 
+
     addLanInterface :(brname, ipaddress, subnetmask, gateway) ->         
         interf =
             "ifname" : "eth#{@ifindex++}"
@@ -230,26 +231,25 @@ class node
 
     create : ()->
         client = request.newClient(vnetbuilderurl)
-        client.post '/createVM', @config, (err, res, body) =>
+        client.post '/vm', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node create result " + JSON.stringify body
             unless body instanceof Error        
-                @config = body if body.result?
+                @uuid = body.id                
                 @start()            
 
     start : ()->        
         client = request.newClient(vnetbuilderurl)
-        client.post '/startVM', @config, (err, res, body) =>
+        client.put "/vm/#{@uuid}/start", @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node start result " + JSON.stringify body
-            unless body instanceof Error
-                @config = body
-                callback @config
-            callback new Error "Failed to Start"             
+            #unless body instanceof Error                
+            #    callback @config
+            #callback new Error "Failed to Start"             
                 
     destroy :(callback)->
         client = request.newClient(vnetbuilderurl)
-        client.post '/deleteVM', @config, (err, res, body) =>
+        client.post '/delete', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node destroy result " + JSON.stringify body
             unless body instanceof Error
@@ -260,7 +260,7 @@ class node
     nodestatus :(callback)->
         util.log "inside node status funciton"
         client = request.newClient(vnetbuilderurl)
-        client.post '/statusVM', @config, (err, res, body) =>
+        client.post '/status', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node statusVM result " + JSON.stringify body
             return callback body            
@@ -281,17 +281,17 @@ class switches
 
     create:()->
         client = request.newClient('http://localhost:5680/')
-        client.post '/createswitch', @config, (err, res, body) =>
+        client.post '/switch', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
             util.log "create switches result " + JSON.stringify body
-            @status = body.result
+            #@status = body.result
 
     destroy:()->
         client = request.newClient('http://localhost:5680/')
-        client.post '/deleteSwitch', @config, (err, res, body) =>
+        client.delete '/delete', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
             util.log "delete switches result " + JSON.stringify body
-            @status = body.result        
+            #@status = body.result        
 
     status:()->
     statistics:()->
@@ -351,7 +351,7 @@ class Topology
 
         for val in @tdata.data.nodes
             obj = new node @tdata.data.projectid, val
-            mgmtip = @ipmgr.getFreeMgmtIP()
+            mgmtip = @ipmgr.getFreeMgmtIP() 
             obj.addMgmtInterface mgmtip , '255.255.255.0'
             @nodeobj.push obj
             
@@ -368,7 +368,7 @@ class Topology
             if val.type is "wan"
                 temp = @ipmgr.getFreeWanSubnet()
                 swname = "#{val.type}_#{val.connected_nodes[0].name}_#{val.connected_nodes[1].name}"
-                util.log "wan swname is "+ swname
+                util.log "  wan swname is "+ swname
                 obj = new switches
                     name : swname
                     ports: 2
@@ -405,7 +405,7 @@ class TopologyMaster
         return callback @registry.list()
 
     create : (data, callback)->
-        project = require './project'
+        
         try	            
             topodata = new TopologyData null, data
 
@@ -419,14 +419,14 @@ class TopologyMaster
             @topologyobj.push @obj
 
     status : (data , callback) ->
-        obj = @getTopologyObj(data.id)
+        obj = @getTopologyObj(data)
         if obj?                    
             return callback obj.vmstatus() 
         else
             return callback new Error "Unknown Topology ID"
 
-    destroy : (data, callback) ->
-        obj = @getTopologyObj(data.id)
+    del : (data, callback) ->
+        obj = @getTopologyObj(data)
         callback @registry.remove obj.uuid
         if obj? 
             return callback obj.destroy()
@@ -435,9 +435,9 @@ class TopologyMaster
 
     getTopologyObj:(data) ->
         for obj in @topologyobj
-            util.log "topologyobj" + obj.projectid
-            if  obj.projectid is data 
-                util.log "getTopologyObj found " + obj.projectid 
+            util.log "topologyobj" + obj.uuid
+            if  obj.uuid is data 
+                util.log "getTopologyObj found " + obj.uuid
                 return obj
         return null
 
