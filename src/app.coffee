@@ -23,18 +23,26 @@
             console.log res
             @send res    
 
+    @get '/Topology/:id/status': -> 
+        console.log "GET Topology/id  received"
+        topology.get @params.id, (res) =>
+            console.log res
+            @send res    
+            
     @delete '/Topology/:id': ->       
         console.log "POST Topology destroy received" 
         topology.del @params.id, (res) =>
             console.log res
             @send res    
+###
     @get '/Topology/:id/status': ->       
         topology.status @params.id, (res) =>
             console.log res
             @send res    
 
+    
 
-###
+
     @post '/Project': ->       
         console.log "POST Project received" + JSON.stringify @body        
         project.create @body, (res) =>

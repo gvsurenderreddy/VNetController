@@ -4,6 +4,7 @@ util = require('util')
 request = require('request-json');
 extend = require('util')._extend
 ip = require 'ip'
+async = require 'async'
 vnetbuilderurl = 'http://localhost:5680/'
 vnetprovisionerurl = 'http://localhost:5681/'
 
@@ -133,6 +134,8 @@ class TopologyData extends StormData
                                     properties:
                                         name:           {"type":"string", "required":false}                                        
                                         enabled:        {"type":"boolean", "required":false}
+                                        autoprovision:  {"type":"boolean", "required":false}
+                                        autostart:  {"type":"boolean", "required":false}                                        
                             no_of_wan_interfaces : {type:"integer", required:true}            
                             no_of_lan_interfaces : {type:"integer", required:true}            
                             no_of_lo_interfaces : {type:"integer", required:true} 
@@ -196,6 +199,7 @@ class node
         @config.ifmap = @ifmap        
 
         @statistics = {}
+        @status = {}
 
 
     addLanInterface :(brname, ipaddress, subnetmask, gateway) ->         
@@ -234,29 +238,35 @@ class node
         client.post '/vm', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node create result " + JSON.stringify body
+            @status = body
             unless body instanceof Error        
-                @uuid = body.id                
+                @uuid = body.id     
+                @status.result = body.status           
+                @status.reason = body.reason if body.reason?
                 @start()            
 
     start : ()->        
         client = request.newClient(vnetbuilderurl)
         client.put "/vm/#{@uuid}/start", @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
-            util.log "node start result " + JSON.stringify body
-            #unless body instanceof Error                
-            #    callback @config
-            #callback new Error "Failed to Start"             
+            util.log "node start result " + JSON.stringify body            
+            unless body instanceof Error                
+                @status.result = body.status
+                @status.reason = body.reason if body.reason?
+
+            
                 
     destroy :(callback)->
         client = request.newClient(vnetbuilderurl)
-        client.post '/delete', @config, (err, res, body) =>
-            util.log "err" + JSON.stringify err if err?            
-            util.log "node destroy result " + JSON.stringify body
-            unless body instanceof Error
-                @config = body 
-                callback @config                            
-            callback new Error "Failed to destroy"
-
+        client.del "/vm/#{@uuid}", (err, res, body) =>
+            util.log "node destroy body " + body if body?
+            util.log "node destroy result - res statuscode" + res.statusCode
+            callback(body)
+            #unless body instanceof Error
+            #    @status.result = body.status
+            #    @status.reason = body.reason if body.reason?
+            #    callback()
+                
     nodestatus :(callback)->
         util.log "inside node status funciton"
         client = request.newClient(vnetbuilderurl)
@@ -265,6 +275,11 @@ class node
             util.log "node statusVM result " + JSON.stringify body
             return callback body            
 
+    get : () ->
+        "config": @config
+        "status": @status
+        "statistics":@statistics
+
     provision : ()->
         # check the services and start configuring the services
         # REST API to provisioner
@@ -272,27 +287,41 @@ class node
     statistics :()->
         # REST API to provisioner
 
+
 ########################################################################################################
 
 class switches    
     constructor:(sw)->
         @config = extend {}, sw
+        @status = {}
+        @statistics = {}
         util.log " switch config " + JSON.stringify @config
+
 
     create:()->
         client = request.newClient('http://localhost:5680/')
         client.post '/switch', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
             util.log "create switches result " + JSON.stringify body
-            #@status = body.result
+            @uuid = body.id     
+            unless body instanceof Error
+                @status.result = body.status
+                @status.reason = body.reason if body.reason?
 
-    destroy:()->
+    destroy:(callback)->
         client = request.newClient('http://localhost:5680/')
-        client.delete '/delete', @config, (err, res, body) =>
+        client.del "/switch/#{@uuid}", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
             util.log "delete switches result " + JSON.stringify body
-            #@status = body.result        
-
+            unless body instanceof Error
+                @status.result = body.status
+                @status.reason = body.reason if body.reason?
+                callback()
+             
+    get:()->
+        "config":@config
+        "status":@status
+        "statistics":@statistics
     status:()->
     statistics:()->
 
@@ -303,10 +332,6 @@ class Topology
         for sw in @switchobj
             sw.create()
 
-    destroySwitches :()->
-        for sw in @switchobj
-            sw.destroy()
-
     createNodes :()->
         for n in @nodeobj
             n.create()
@@ -316,14 +341,17 @@ class Topology
         for n in @nodeobj
             util.log "starting node"
             n.start()
-
+    ###
     destroyNodes: ()->    
         util.log "destroyNodes"
         for n in @nodeobj
             util.log "delete node"
             n.destroy()
         return
-
+    destroySwitches :()->
+        for sw in @switchobj
+            sw.destroy()
+###
     getNodeObjbyName:(name) ->
         for obj in @nodeobj
             util.log "getNodeObjbyName" + obj.config.name
@@ -336,8 +364,13 @@ class Topology
     constructor :(@tdata) ->
         util.log "Topology class: " + JSON.stringify @tdata               
         util.log "createSwitches "+ JSON.stringify @tdata.data.switches
+        @config = {}
+        @status = {}
+        @statistics = {}
+        @config = extend {}, tdata
+
         @uuid = @tdata.id
-        @projectid = @tdata.data.projectid
+        #@projectid = @tdata.data.projectid
         @switchobj = []
         @nodeobj =  []
         @linksobj = []
@@ -382,9 +415,77 @@ class Topology
         @createSwitches()
         @createNodes()    
         
-    destroy :()->
-        @destroyNodes()
+    destroyNodes :()->
+        @tmparray = []
         #@destroySwithes()
+        util.log "destroying the Nodes"
+
+        async.each @nodeobj, (n,callback) =>
+            util.log "delete node #{n.uuid}"
+            n.destroy (result) =>                
+                @tmparray.push result
+                callback()
+        ,(err) =>
+            if err
+                console.log "error occured " + err
+                return false
+            else
+                console.log "all are processed " + @tmparray
+                return true
+    destroySwitches :()->
+        @tmparray = []
+        #@destroySwithes()
+        util.log "destroying the Switches"
+
+        async.each @switchobj, (n,callback) =>
+            util.log "delete switch #{n.uuid}"
+            n.destroy (result) =>                
+                @tmparray.push result
+                callback()
+        ,(err) =>
+            if err
+                console.log "error occured " + err
+                return false
+            else
+                console.log "all are processed " + @tmparray
+                return true
+
+
+    destroy :()->
+        res = @destroyNodes() 
+        res1 = @destroySwitches()
+        return true
+
+
+        ###        
+        for n in @nodeobj
+            util.log "delete node #{n.uuid}"
+            n.destroy (result) =>
+                destroynodes.push result if result?
+
+        for sw in @switchobj
+            util.log "delete switches #{sw.uuid}"
+            sw.destroy (result) =>
+                destroyswitches.push result if result?
+        
+
+        "nodes" : destroynodes
+        "switches" : destroyswitches
+        ###
+
+
+    get :()->
+        nodestatus = []
+        switchstatus = []
+
+        for n in @nodeobj
+            nodestatus.push n.get()
+        for n in @switchobj
+            switchstatus.push n.get()
+        "config" : @config
+        "status" :
+            "vmstatus" : nodestatus
+            "switchstatus":  switchstatus
 
     vmstatus :(callback)->
         arr = []
@@ -405,7 +506,6 @@ class TopologyMaster
         return callback @registry.list()
 
     create : (data, callback)->
-        
         try	            
             topodata = new TopologyData null, data
 
@@ -427,11 +527,20 @@ class TopologyMaster
 
     del : (data, callback) ->
         obj = @getTopologyObj(data)
-        callback @registry.remove obj.uuid
         if obj? 
+            @registry.remove obj.uuid
             return callback obj.destroy()
         else
             return callback new Error "Unknown Topology ID"
+
+    get : (data, callback) ->
+        obj = @getTopologyObj(data)
+        if obj? 
+            return callback obj.get()
+        else
+            return callback new Error "Unknown Topology ID"
+
+
 
     getTopologyObj:(data) ->
         for obj in @topologyobj
