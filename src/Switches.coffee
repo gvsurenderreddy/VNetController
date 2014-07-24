@@ -31,7 +31,7 @@ class switches
             @status.reason = body.reason if body.reason?
             callback
 
-    destroy: (callback)->
+    del: (callback)->
         client = request.newClient('http://localhost:5680/')
         client.del "/switch/#{@uuid}", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?

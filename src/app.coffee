@@ -34,63 +34,30 @@
         topology.del @params.id, (res) =>
             console.log res
             @send res    
-###
-    @get '/Topology/:id/status': ->       
-        topology.status @params.id, (res) =>
+
+    # Device specific control operations
+    @get '/Topology/:id/device/:did': -> 
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        topology.deviceStatus @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
-    
-
-
-    @post '/Project': ->       
-        console.log "POST Project received" + JSON.stringify @body        
-        project.create @body, (res) =>
-            console.log res
-            @send res    
-    @get '/Project' : ->
-        console.log "GET Project received" + JSON.stringify @body        
-        project.list (res) =>
-            console.log res
-            @send res    
-    @put '/node': ->
-        switchctrl.listSwitches (res) =>
-            console.log res
-            @send res  
-
-    @delete '/node': ->   
-        console.log "createVM received" + JSON.stringify @body        
-        vmctrl.createVM @body, (res) =>
-            console.log res
-            @send res
-
-    @post '/startVM': ->   
-        console.log "startVM received" + JSON.stringify @body        
-        vmctrl.startVM @body, (res) =>
+    @put '/Topology/:id/device/:did/start': -> 
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        topology.deviceStart @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
-    @post '/stopVM': ->   
-        console.log "stopVM received" + JSON.stringify @body        
-        vmctrl.stopVM @body, (res) =>
+    @put '/Topology/:id/device/:did/stop': -> 
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        topology.deviceStop @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
-    @get '/listVMs': ->   
-        console.log "listVMs received" + JSON.stringify @body        
-        vmctrl.listVMs @body, (res) =>
+    @delete '/Topology/:id/device/:did': -> 
+        console.log "DEL Topology/id  received"
+        topology.deviceDelete @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
-    @post '/deleteVMs': ->   
-        console.log "deleteVMs received" + JSON.stringify @body        
-        vmctrl.deleteVMs @body, (res) =>
-            console.log res
-            @send res    
 
-    @post '/deleteVM': ->   
-        console.log "deleteVM received" + JSON.stringify @body        
-        vmctrl.deleteVM @body, (res) =>
-            console.log res
-            @send res    
-###
