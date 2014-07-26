@@ -91,7 +91,15 @@ class node
             callback(@status)   
 
     stop: ()->
-        #To be done.
+        client = request.newClient(vnetbuilderurl)
+        client.put "/vm/#{@uuid}/stop", @config, (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node stop result " + JSON.stringify body            
+            #failure cases not handler properly
+            #unless body instanceof Error                
+            @status.result = body.status
+            @status.reason = body.reason if body.reason?
+            callback(@status)   
                 
     #delete the VM
     del :(callback)->
@@ -101,7 +109,7 @@ class node
             util.log "node del result - res statuscode" + res.statusCode
             callback(body)
                 
-    
+    #This function get the data stored in the vmbuilder
     getstatus :(callback)->
         util.log "inside get status funciton"
         client = request.newClient(vnetbuilderurl)
@@ -110,7 +118,7 @@ class node
             util.log "node status vm result " + JSON.stringify body
             return callback body         
 
-
+    #This function get the current status 
     getrunningstatus :(callback)->
         util.log "inside get status funciton"
         client = request.newClient(vnetbuilderurl)
@@ -119,11 +127,17 @@ class node
             util.log "node running status vm result " + JSON.stringify body
             return callback body   
 
-    statistics :()->
-        # REST API to provisioner
+    stats :(callback)->
+        # REST API 
+        util.log "inside stats funciton"
+        client = request.newClient(vnetprovisionerurl)
+        client.get "/provision/#{@uuid}/stats", (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node stats collectoin result " + JSON.stringify body
+            @statistics = body
+            return callback body    
 
 
- 
     #  provisioning function
     provision : (callback)->
         # check the services and start configuring the services

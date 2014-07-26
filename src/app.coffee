@@ -42,6 +42,12 @@
             console.log res
             @send res    
 
+    @get '/Topology/:id/device/:did/stats': -> 
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        topology.deviceStats @params.id, @params.did, (res) =>
+            console.log res
+            @send res  
+
     @put '/Topology/:id/device/:did/start': -> 
         console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
         topology.deviceStart @params.id, @params.did, (res) =>

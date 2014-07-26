@@ -1,3 +1,4 @@
+
 StormRegistry = require 'stormregistry'
 StormData = require 'stormdata'
 util = require('util')
@@ -377,7 +378,20 @@ class TopologyMaster
             return callback new Error "Unknown Topology ID"
 
     #Device specific rest API functions
-    deviceStatus: (topolid, deviceid, callback) ->
+    deviceStats: (topolid, deviceid, callback) ->
+        obj = @getTopologyObj(topolid)
+        if obj? 
+            deviceobj = obj.getNodeObjbyUUID(deviceid)
+            if deviceobj?
+                deviceobj.stats (result)=>
+                    callback result
+            else                
+                callback new Error "Unknown Device ID"
+        else
+            callback new Error "Unknown Topology ID"
+
+
+     deviceStatus: (topolid, deviceid, callback) ->
         obj = @getTopologyObj(topolid)
         if obj? 
             deviceobj = obj.getNodeObjbyUUID(deviceid)
@@ -387,6 +401,8 @@ class TopologyMaster
                 return callback new Error "Unknown Device ID"
         else
             return callback new Error "Unknown Topology ID"
+
+
 
     deviceStart: (topolid, deviceid, callback) ->
         obj = @getTopologyObj(topolid)
