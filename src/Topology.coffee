@@ -232,6 +232,7 @@ class Topology
             else
                 console.log "all are processed " + @tmparray
                 return true
+    
     destroySwitches :()->
         @tmparray = []
         #@destroySwithes()
@@ -391,25 +392,38 @@ class TopologyMaster
             callback new Error "Unknown Topology ID"
 
 
-     deviceStatus: (topolid, deviceid, callback) ->
+     deviceGet: (topolid, deviceid, callback) ->
         obj = @getTopologyObj(topolid)
         if obj? 
             deviceobj = obj.getNodeObjbyUUID(deviceid)
-            unless deviceobj is null
-                return callback deviceobj.get()         
+            if deviceobj?
+                deviceobj.getstatus (result)=>
+                    return callback result
             else                
                 return callback new Error "Unknown Device ID"
         else
             return callback new Error "Unknown Topology ID"
 
 
+    deviceStatus: (topolid, deviceid, callback) ->
+        obj = @getTopologyObj(topolid)
+        if obj? 
+            deviceobj = obj.getNodeObjbyUUID(deviceid)
+            if deviceobj?
+                deviceobj.getrunningstatus (result)=>
+                    return callback result
+            else                
+                return callback new Error "Unknown Device ID"
+        else
+            return callback new Error "Unknown Topology ID"
 
     deviceStart: (topolid, deviceid, callback) ->
         obj = @getTopologyObj(topolid)
         if obj? 
             deviceobj = obj.getNodeObjbyUUID(deviceid)
-            unless deviceobj is null
-                return callback deviceobj.start()         
+            if deviceobj?
+                deviceobj.start (result)=>
+                    callback result
             else                
                 return callback new Error "Unknown Device ID"
         else
@@ -420,19 +434,21 @@ class TopologyMaster
         obj = @getTopologyObj(topolid)
         if obj? 
             deviceobj = obj.getNodeObjbyUUID(deviceid)
-            unless deviceobj is null
-                return callback deviceobj.stop()         
+            if deviceobj?
+                deviceobj.stop (result)=>
+                    callback result
             else                
                 return callback new Error "Unknown Device ID"
         else
             return callback new Error "Unknown Topology ID"
 
-   deviceDelete: (topolid, deviceid, callback) ->
+    deviceDelete: (topolid, deviceid, callback) ->
         obj = @getTopologyObj(topolid)
         if obj? 
             deviceobj = obj.getNodeObjbyUUID(deviceid)
-            unless deviceobj is null
-                return callback deviceobj.del()         
+            if deviceobj?
+                deviceobj.del (result)=>    
+                    return callback result
             else                
                 return callback new Error "Unknown Device ID"
         else

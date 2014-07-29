@@ -38,30 +38,36 @@
     # Device specific control operations
     @get '/Topology/:id/device/:did': -> 
         console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        topology.deviceGet @params.id, @params.did, (res) =>
+            console.log res
+            @send res  
+
+    @get '/Topology/:id/device/:did/status': -> 
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  status received"
         topology.deviceStatus @params.id, @params.did, (res) =>
             console.log res
-            @send res    
+            @send res  
 
     @get '/Topology/:id/device/:did/stats': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        console.log "GET Topology #{@params.id}  device id#{@params.did}  stats received"
         topology.deviceStats @params.id, @params.did, (res) =>
             console.log res
             @send res  
 
     @put '/Topology/:id/device/:did/start': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        console.log "PUT Topology #{@params.id}  device id#{@params.did}  start received"
         topology.deviceStart @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
     @put '/Topology/:id/device/:did/stop': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        console.log "PUT Topology #{@params.id}  device id#{@params.did}  stop received"
         topology.deviceStop @params.id, @params.did, (res) =>
             console.log res
             @send res    
 
     @delete '/Topology/:id/device/:did': -> 
-        console.log "DEL Topology/id  received"
+        console.log "DEL Topology #{@params.id}  device id#{@params.did}  delete received"
         topology.deviceDelete @params.id, @params.did, (res) =>
             console.log res
             @send res    

@@ -90,7 +90,7 @@ class node
             @status.reason = body.reason if body.reason?
             callback(@status)   
 
-    stop: ()->
+    stop: (callback)->
         client = request.newClient(vnetbuilderurl)
         client.put "/vm/#{@uuid}/stop", @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            

@@ -28,18 +28,17 @@ class switches
             #unless body instanceof Error
             #Error cases to be handled
             @status.result = body.status
-            @status.reason = body.reason if body.reason?
+            @status.reason = body.reason if body?.reason?
             callback
 
     del: (callback)->
         client = request.newClient('http://localhost:5680/')
         client.del "/switch/#{@uuid}", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
-            util.log "delete switches result " + JSON.stringify body
+            util.log "delete switches result " + JSON.stringify body if body?
             unless body instanceof Error
-                @status.result = body.status
-                @status.reason = body.reason if body.reason?
-                  callback(@result)
+                @status.result = body.status if body?.status?
+                callback @status
 
     get:()->
         "uuid":@uuid
