@@ -132,8 +132,9 @@ class Topology
         return null
 
     getSwitchObjbyName:(name) ->
+        util.log "inpjut for check " + name
         for obj in @switchobj
-            util.log "getSwitchObjbyName" + obj.config.name
+            util.log "getSwitchObjbyName iteratkon " + obj.config.name
             if obj.config.name is name
                 util.log "getSwitchObjbyName found " + obj.config.name
                 return obj
@@ -159,10 +160,6 @@ class Topology
 
 
     createSwitches :(cb)->
-        #async parallel to be used to create nodes and sw.create responses to be handled.
-        for sw in @switchobj
-            sw.create()            
-
         async.each @switchobj, (sw,callback) =>
             util.log "create switch "
             sw.create (result) =>   
@@ -176,6 +173,19 @@ class Topology
                 console.log "createswitches all are processed "
                 cb (true)
 
+    startSwitches :(cb)->
+        async.each @switchobj, (sw,callback) =>
+            util.log "start switch "
+            sw.start (result) =>   
+                util.log "start switch result " + JSON.stringify result
+                callback()
+        ,(err) =>
+            if err
+                console.log "error occured " + err
+                cb(false)
+            else
+                console.log "startswitches all are processed "
+                cb (true)
 
     #create and start the nodes
     # The node creation process is async.  node create (create) call immediately respond with "creation-in-progress"
@@ -271,7 +281,7 @@ class Topology
                 return true
 
     #Create Links  - Todo
-    createLinks :()->
+    createLinks :(cb)->
         #travel each node and travel each interface 
         #get bridgename and vethname
         # call the api to add virtual interface to the switch
@@ -280,10 +290,11 @@ class Topology
             #travelling each interface
             for ifmap in n.config.ifmap
                 if ifmap.veth?
-                    obj = getSwitchObjbyName(ifmap.bridgename)
-                    obj.connect ifmap.veth , (res) =>
-                        console.log "connect result" + res
-                        callback()                                
+                    obj = @getSwitchObjbyName(ifmap.brname)
+                    if obj?
+                        obj.connect ifmap.veth , (res) =>
+                            console.log "connect result" + res
+                            callback()                                
         ,(err) =>
             if err
                 console.log "error occured " + err
@@ -343,10 +354,15 @@ class Topology
             #Check the sttatus and do provision
             @createLinks (res)=>
                 console.log "create links result " + res
-                util.log "ready for provision"
-                #provision
-                @provisionNodes (res)=>
-                    util.log "provision" + res
+
+                @startSwitches (res)=>
+                    console.log "start switches result "  + res
+                    util.log "ready for provision"
+
+                    #provision
+                    @provisionNodes (res)=>
+                        util.log "provision" + res
+
 
     del :()->
         res = @destroyNodes() 

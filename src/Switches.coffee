@@ -14,6 +14,7 @@ class switches
     constructor:(sw)->
         @config = extend {}, sw
         @config.make ?= "bridge"
+        #@config.veths = []
         @status = {}
         @statistics = {}
         util.log " switch config " + JSON.stringify @config
@@ -69,17 +70,16 @@ class switches
 
     
     connect:(ifname, callback)->
+        #@config.veths.push ifname
         client = request.newClient('http://localhost:5680/')
         val =
-            "ifname": ifname
+            "ifname": ifname        
         client.put "/switch/#{@uuid}/connect", val, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?
             util.log "start switche result " + JSON.stringify body if body?
             unless body instanceof Error
                 @status.result = body.status if body?.status?
                 callback @status
-
-
     switchStatus:()->
         #To be done    
     statistics:()->

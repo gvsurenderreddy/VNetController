@@ -56,6 +56,7 @@ class node
             "gateway" : gateway if gateway?
             "type":"wan"
             "veth" : "veth_#{@config.name}_eth#{@ifindex}"
+        
         @ifindex++
         @ifmap.push  interf
 
