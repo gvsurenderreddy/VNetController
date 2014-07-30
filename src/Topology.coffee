@@ -65,6 +65,7 @@ class TopologyData extends StormData
                             name: {type:"string", required:false}            
                             type:  {type:"string", required:false}            
                             ports: {type:"integer", required:false}
+                            make: {type:"string", required:true}
             nodes:
                     type: "array"
                     items:
@@ -95,6 +96,7 @@ class TopologyData extends StormData
                         properties:                
                             type: {type:"string", required:true}
                             switch: {type:"string", required:false}
+                            make: {type:"string", required:false}
                             connected_nodes:
                                 type: "array"
                                 required: true
@@ -128,6 +130,23 @@ class Topology
                 util.log "getNodeObjbyName found " + obj.config.name
                 return obj
         return null
+
+    getSwitchObjbyName:(name) ->
+        for obj in @switchobj
+            util.log "getSwitchObjbyName" + obj.config.name
+            if obj.config.name is name
+                util.log "getSwitchObjbyName found " + obj.config.name
+                return obj
+        return null
+
+    getSwitchObjbyUUID:(uuid) ->
+        for obj in @switchobj
+            util.log "getSwitchObjbyUUID " + obj.uuid
+            if obj.uuid is uuid
+                util.log "getSwitchObjbyUUID found " + obj.uuid
+                return obj
+        return null
+
 
 
     getNodeObjbyUUID:(uuid) ->
@@ -251,6 +270,30 @@ class Topology
                 console.log "all are processed " + @tmparray
                 return true
 
+    #Create Links  - Todo
+    createLinks :()->
+        #travel each node and travel each interface 
+        #get bridgename and vethname
+        # call the api to add virtual interface to the switch
+        async.each @nodeobj, (n,callback) =>
+            util.log "create Links"
+            #travelling each interface
+            for ifmap in n.config.ifmap
+                if ifmap.veth?
+                    obj = getSwitchObjbyName(ifmap.bridgename)
+                    obj.connect ifmap.veth , (res) =>
+                        console.log "connect result" + res
+                        callback()                                
+        ,(err) =>
+            if err
+                console.log "error occured " + err
+                cb(false)
+            else
+                console.log "connected links  all are processed "
+                cb (true)
+
+
+
     #Topology REST API functions
     create :(@tdata)->
         util.log "Topology create: " + JSON.stringify @tdata                       
@@ -285,7 +328,8 @@ class Topology
                 obj = new switches
                     name : swname
                     ports: 2
-                    type : "bridge"                
+                    type : val.type
+                    make : val.make
                 @switchobj.push obj
                 for n in  val.connected_nodes
                     obj = @getNodeObjbyName(n.name)
@@ -296,10 +340,13 @@ class Topology
             util.log "createswitches result" + res            
         @createNodes (res)=>
             util.log "topologycreation status" + res
-                #Check the sttatus and do provision
-            util.log "readu for provision"
-            @provisionNodes (res)=>
-                util.log "provision" + res
+            #Check the sttatus and do provision
+            @createLinks (res)=>
+                console.log "create links result " + res
+                util.log "ready for provision"
+                #provision
+                @provisionNodes (res)=>
+                    util.log "provision" + res
 
     del :()->
         res = @destroyNodes() 
