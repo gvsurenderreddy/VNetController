@@ -136,7 +136,7 @@ class node
         # REST API 
         util.log "inside stats funciton"
         client = request.newClient(vnetprovisionerurl)
-        client.get "/provision/#{@uuid}/stats", (err, res, body) =>
+        client.get "/collect/#{@uuid}/stats", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node stats collectoin result " + JSON.stringify body
             @statistics = body
@@ -152,9 +152,25 @@ class node
         client.post '/provision', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node provision result " + JSON.stringify body
+            @status.result = body.status  if body?.status?
+            @status.reason = body.reason if body?.reason?
             return callback body    
 
+    provisionStatus : (callback)->
+        # check the services and start configuring the services
+        # REST API to provisioner
+        util.log "inside provisioner funciton"
+        client = request.newClient(vnetprovisionerurl)
+        client.get "/provision/#{@uuid}/status", (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node provision result " + JSON.stringify body
+            @status.result = body.status  if body?.status?
+            @status.reason = body.reason if body?.reason?
+            return callback body    
     
+
+
+
     #retun the current data of this object
     get : () ->
         "id" : @uuid

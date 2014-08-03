@@ -86,6 +86,10 @@ class TopologyData extends StormData
                                     properties:
                                         name:           {"type":"string", "required":false}                                        
                                         enabled:        {"type":"boolean", "required":false}                                        
+                                        config:        
+                                            type: "object"
+                                            required : false                                         
+
             links:
                     type: "array"
                     items:
@@ -280,7 +284,7 @@ class Topology
                 console.log "all are processed " + @tmparray
                 return true
 
-    #Create Links  - Todo
+    #Create Links  
     createLinks :(cb)->
         #travel each node and travel each interface 
         #get bridgename and vethname
@@ -288,13 +292,17 @@ class Topology
         async.each @nodeobj, (n,callback) =>
             util.log "create Links"
             #travelling each interface
+
             for ifmap in n.config.ifmap
                 if ifmap.veth?
                     obj = @getSwitchObjbyName(ifmap.brname)
                     if obj?
                         obj.connect ifmap.veth , (res) =>
                             console.log "connect result" + res
-                            callback()                                
+            #once all the ifmaps are processed, callback it.
+            # TOdo : check whether async each to be used  for ifmap processing.
+            callback()    
+
         ,(err) =>
             if err
                 console.log "error occured " + err
