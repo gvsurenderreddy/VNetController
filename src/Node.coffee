@@ -6,11 +6,11 @@ extend = require('util')._extend
 ip = require 'ip'
 async = require 'async'
 
-vnetbuilderurl = 'http://localhost:5680/'
-vnetprovisionerurl = 'http://localhost:5671/'
+#vnetbuilderurl = 'http://localhost:5680/'
+#vnetprovisionerurl = 'http://localhost:5671/'
 
 #utility functions 
-#To be modified
+#Todo:  Not scalable....To be modified
 HWADDR_PREFIX = "00:16:3e:5a:55:"
 HWADDR_START = 10
 getHwAddress = () ->
@@ -20,17 +20,21 @@ getHwAddress = () ->
 
 
 class node
-    constructor:(topoid, data) ->
+    constructor:(topoid, data ,vnetbuilderurl, vnetprovisionerurl) ->
         @ifmap = []        
         @ifindex = 1
-        
-        @config = extend {}, data        
+        #@vnetbuilderurl = vnetbuilderurl
+        #util.log "vnetbuilderurl " + @vnetbuilderurl
+        @config = extend {}, data   
+        @config.vnetbuilderurl = vnetbuilderurl     
+        @config.vnetprovisionerurl = vnetprovisionerurl     
         @config.memory = "128m"
         @config.vcpus = "2"
         @config.projectid = topoid        
         @config.ifmap = @ifmap        
         @statistics = {}
         @status = {}
+
 
 
     addLanInterface :(brname, ipaddress, subnetmask, gateway) ->         
@@ -71,10 +75,11 @@ class node
 
     #
     create : (callback)->
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.post '/vm', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node create result " + JSON.stringify body            
+            #Todo
             #failure response not handled properly
             #unless body instanceof Error        
             @uuid = body.id
@@ -85,10 +90,11 @@ class node
                 #@start()            
 
     start : (callback)->        
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.put "/vm/#{@uuid}/start", @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node start result " + JSON.stringify body            
+            #Todo
             #failure cases not handler properly
             #unless body instanceof Error                
             @status.result = body.status
@@ -96,46 +102,62 @@ class node
             callback(@status)   
 
     stop: (callback)->
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.put "/vm/#{@uuid}/stop", @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node stop result " + JSON.stringify body            
+            #Todo
             #failure cases not handler properly
             #unless body instanceof Error                
             @status.result = body.status
             @status.reason = body.reason if body.reason?
             callback(@status)   
-                
+
+    trace: (callback)->
+        client = request.newClient(@config.vnetbuilderurl)
+        client.put "/vm/#{@uuid}/trace", @config, (err, res, body) =>
+            util.log "err" + JSON.stringify err if err?            
+            util.log "node trace result " + JSON.stringify body            
+            #Todo
+            #failure cases not handler properly
+            #unless body instanceof Error                
+            #@status.result = body.status
+            #@status.reason = body.reason if body.reason?
+            callback(@body)   
+
     #delete the VM
     del :(callback)->
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.del "/vm/#{@uuid}", (err, res, body) =>
             util.log "node del body " + body if body?
             util.log "node del result - res statuscode" + res.statusCode
+            #Todo
             callback(body)
                 
     #This function get the data stored in the vmbuilder
     getstatus :(callback)->
         util.log "inside get status funciton"
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.get "/vm/#{@uuid}", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node status vm result " + JSON.stringify body
+            #Todo
             return callback body         
 
     #This function get the current status 
     getrunningstatus :(callback)->
         util.log "inside get status funciton"
-        client = request.newClient(vnetbuilderurl)
+        client = request.newClient(@config.vnetbuilderurl)
         client.get "/vm/#{@uuid}/status", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node running status vm result " + JSON.stringify body
+            #Todo
             return callback body   
 
     stats :(callback)->
         # REST API 
         util.log "inside stats funciton"
-        client = request.newClient(vnetprovisionerurl)
+        client = request.newClient(@config.vnetprovisionerurl)
         client.get "/collect/#{@uuid}/stats", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node stats collectoin result " + JSON.stringify body
@@ -148,7 +170,7 @@ class node
         # check the services and start configuring the services
         # REST API to provisioner
         util.log "inside provisioner funciton"
-        client = request.newClient(vnetprovisionerurl)
+        client = request.newClient(@config.vnetprovisionerurl)
         client.post '/provision', @config, (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node provision result " + JSON.stringify body
@@ -160,7 +182,7 @@ class node
         # check the services and start configuring the services
         # REST API to provisioner
         util.log "inside provisioner funciton"
-        client = request.newClient(vnetprovisionerurl)
+        client = request.newClient(@config.vnetprovisionerurl)
         client.get "/provision/#{@uuid}/status", (err, res, body) =>
             util.log "err" + JSON.stringify err if err?            
             util.log "node provision result " + JSON.stringify body
@@ -179,3 +201,8 @@ class node
         "statistics":@statistics
 
 module.exports = node
+
+
+#Todo items
+#request.json - HTTP response  code
+#Timeout condition - if server is not reachable

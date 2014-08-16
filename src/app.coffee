@@ -10,66 +10,81 @@
     @enable 'serve jquery', 'minify'
 
     topology = require('./Topology')        
+    util = require('util')
 
     @post '/Topology': ->       
-        console.log "POST Topology received" + JSON.stringify @body        
+        util.log "POST Topology received" + JSON.stringify @body        
         topology.create @body, (res) =>
-            console.log res
+            util.log "POST Topology result " + res
             @send res    
 
+    @get '/Project/:id': ->
+        util.log "GET Project  received" + JSON.stringify @params.id        
+        topology.getproject @params.id,  (res) =>
+            util.log "GET Project result " + res
+            @send res    
+
+
+
     @get '/Topology': ->
-        console.log "GET Topology  received" + JSON.stringify @body        
+        util.log "GET Topology  received" + JSON.stringify @body        
         topology.list (res) =>
-            console.log res
+            util.log "GET Topology result " + res
             @send res    
 
     @get '/Topology/:id/status': -> 
-        console.log "GET Topology/id  received"
+        util.log "GET Topology/id #{@params.id}received - topology id "
         topology.get @params.id, (res) =>
-            console.log res
+            util.log "GET Topology/id result " + res
             @send res    
             
     @delete '/Topology/:id': ->       
-        console.log "POST Topology destroy received" 
+        util.log "DELETE Topology  #{@params.id} received" 
         topology.del @params.id, (res) =>
-            console.log res
+            util.log "DELETE Topology  #{@params.id} result  " + res
             @send res    
 
     # Device specific control operations
     @get '/Topology/:id/device/:did': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  received"
+        util.log "GET Topology #{@params.id}  device id#{@params.did}  received"
         topology.deviceGet @params.id, @params.did, (res) =>
-            console.log res
+            util.log "GET Topology #{@params.id}  device id#{@params.did} - result " + res
             @send res  
 
     @get '/Topology/:id/device/:did/status': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  status received"
+        util.log "GET Topology #{@params.id}  device id#{@params.did}  status received"
         topology.deviceStatus @params.id, @params.did, (res) =>
-            console.log res
+            util.log "GET Topology #{@params.id}  device id#{@params.did} status result - " + res
             @send res  
 
     @get '/Topology/:id/device/:did/stats': -> 
-        console.log "GET Topology #{@params.id}  device id#{@params.did}  stats received"
+        util.log "GET Topology #{@params.id}  device id#{@params.did}  stats received"
         topology.deviceStats @params.id, @params.did, (res) =>
-            console.log res
+            util.log "GET Topology #{@params.id}  device id#{@params.did} stats result" + res
             @send res  
 
     @put '/Topology/:id/device/:did/start': -> 
-        console.log "PUT Topology #{@params.id}  device id#{@params.did}  start received"
+        util.log "PUT Topology #{@params.id}  device id#{@params.did} start received"
         topology.deviceStart @params.id, @params.did, (res) =>
-            console.log res
+            util.log "PUT Topology #{@params.id}  device id#{@params.did} start - result" + res
             @send res    
 
     @put '/Topology/:id/device/:did/stop': -> 
-        console.log "PUT Topology #{@params.id}  device id#{@params.did}  stop received"
+        util.log "PUT Topology #{@params.id}  device id#{@params.did}  stop received"
         topology.deviceStop @params.id, @params.did, (res) =>
-            console.log res
+            util.log "PUT Topology #{@params.id}  device id#{@params.did} stop result - " + res
+            @send res    
+
+    @put '/Topology/:id/device/:did/trace': -> 
+        util.log "PUT Topology #{@params.id}  device id#{@params.did}  trace received"
+        topology.deviceTrace @params.id, @params.did, (res) =>
+            util.log "PUT Topology #{@params.id}  device id#{@params.did} Trace result - " + res
             @send res    
 
     @delete '/Topology/:id/device/:did': -> 
-        console.log "DEL Topology #{@params.id}  device id#{@params.did}  delete received"
+        util.log "DELETE Topology #{@params.id}  device id#{@params.did}  delete received"
         topology.deviceDelete @params.id, @params.did, (res) =>
-            console.log res
+            util.log " DELETE Topology #{@params.id}  device id#{@params.did}  - result " + res
             @send res    
 
 

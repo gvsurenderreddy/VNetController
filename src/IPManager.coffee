@@ -7,6 +7,9 @@ ip = require 'ip'
 async = require 'async'
 
 ##########################################################################################################
+#It works perfectly, even its not clean.
+# revisit later.
+
 # utility functions
 subnetting = (net, curprefix, newprefix ) ->
     

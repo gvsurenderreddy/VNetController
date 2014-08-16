@@ -23,47 +23,69 @@ Request Data:
     {
       "name":"lansw1",
       "ports":8,
-      "type":"bridge"     
+      "type":"lan",
+      "make":"bridge"
     }
   ],  
   "nodes":[
     {
-      "name":"vm1",
+      "name":"v1",
       "type":"router",
       "Services":[
         {
-          "name":"quagga",
-          "enabled":true
+          "name":"quagga",        
+          "config":{}
+        },
+        {
+          "name":"openvpn",          
+          "config":{}
+        },
+        {
+          "name":"snort",          
+          "config":{}
+        },
+        {
+          "name":"strongswan",          
+          "config":{}
+        },
+        {
+          "name":"iptable",          
+          "config":{}
+        },
+        {
+          "name":"iproute2",          
+          "config":{}
         }
       ]      
     },
     {
-      "name":"vm2",
+      "name":"v2",
       "type":"router",
       "Services":[
         {
           "name":"quagga",
-          "enabled":true
+          "config":{}
+          
         }
       ]      
     },
     {
-      "name":"vm3",
+      "name":"v3",
       "type":"router",
       "Services":[
         {
           "name":"quagga",
-          "enabled":true
+          "config":{}
         }
       ]      
-    },
+    }                                                                                                                                                                       ,
     {
       "name":"server1",
       "type":"host",
       "Services":[
         {
-          "name":"webserver",
-          "enabled":true
+          "name":"apache",
+          "config":{}
         }
       ]      
     }
@@ -72,18 +94,36 @@ Request Data:
   "links":[
     {
       "type":"wan",
-      "connected_nodes":[{"name":"vm1"},{"name":"vm2"}],
-      "switch":""
+      "connected_nodes":[{"name":"v1"},{"name":"v2"}],
+      "switch":"",
+      "make":"bridge",
+      "config":{
+        "bandwidth":"1mbps",        
+        "delay":10,
+        "jitter":1,
+        "pktloss":"0%"
+      }
     },
     {
       "type":"wan",
-      "connected_nodes":[{"name":"vm2"},{"name":"vm3"}],
-      "switch":""
+      "connected_nodes":[{"name":"v2"},{"name":"v3"}],
+      "switch":"",
+      "make":"bridge",
+      "config":{
+        "bandwidth":"512kbps",        
+        "delay":10,
+        "jitter":1,
+        "pktloss":"10%"
+      }
+
     },
     {
       "type":"lan",
-      "connected_nodes":[{"name":"vm1"},{"name":"server1"}],
-      "switch":"lansw1"
+      "connected_nodes":[{"name":"v1"},{"name":"server1"}],
+      "switch":"lansw1",
+      "make":"bridge",
+      "config":{        
+      }
     }    
     ]  
 }

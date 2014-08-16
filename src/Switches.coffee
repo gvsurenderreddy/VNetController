@@ -1,28 +1,27 @@
-StormRegistry = require 'stormregistry'
-StormData = require 'stormdata'
 util = require('util')
 request = require('request-json');
 extend = require('util')._extend
-ip = require 'ip'
-async = require 'async'
 
-
-vnetbuilderurl = 'http://localhost:5680/'
-vnetprovisionerurl = 'http://localhost:5681/'
+#@vnetbuilderurl = 'http://localhost:5680/'
 
 class switches    
-    constructor:(sw)->
+    constructor: (sw , vnetbuilderurl, vnetprovisioner )->                
         @config = extend {}, sw
+        @config.vnetbuilderurl = vnetbuilderurl
+        @config.vnetprovisionerurl = vnetprovisioner
         @config.make ?= "bridge"
-        #@config.veths = []
         @status = {}
         @statistics = {}
         util.log " switch config " + JSON.stringify @config
+        util.log " switch config vnetbuilderurl " + JSON.stringify @config.vnetbuilderurl
+        util.log " switch config vnetprovisionerurl " + JSON.stringify @config.vnetprovisionerurl
+        #util.log " vnetbuilderurl  " + @vnetbuilderurl
 
 
     create: (callback)->
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(@config.vnetbuilderurl)
         client.post '/switch', @config, (err, res, body) =>
+            #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
             util.log "create switches result " + JSON.stringify body
             @uuid = body.id     
@@ -33,8 +32,9 @@ class switches
             callback
 
     del: (callback)->
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(@config.vnetbuilderurl)
         client.del "/switch/#{@uuid}", (err, res, body) =>
+            #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
             util.log "delete switches result " + JSON.stringify body if body?
             unless body instanceof Error    
@@ -51,8 +51,9 @@ class switches
 
     stop:()->
         #To be done
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(@config.vnetbuilderurl)
         client.put "/switch/#{@uuid}/stop", @config, (err, res, body) =>
+            #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
             util.log "start switche result " + JSON.stringify body if body?
             unless body instanceof Error
@@ -60,8 +61,9 @@ class switches
                 callback @status
 
     start:(callback)->
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(@config.vnetbuilderurl)
         client.put "/switch/#{@uuid}/start", @config, (err, res, body) =>
+            #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
             util.log "start switche result " + JSON.stringify body if body?
             unless body instanceof Error
@@ -70,20 +72,23 @@ class switches
 
     
     connect:(ifname, callback)->
-        #@config.veths.push ifname
-        client = request.newClient('http://localhost:5680/')
+        client = request.newClient(@config.vnetbuilderurl)
         val =
             "ifname": ifname        
         client.put "/switch/#{@uuid}/connect", val, (err, res, body) =>
+            #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
             util.log "start switche result " + JSON.stringify body if body?
             unless body instanceof Error
                 @status.result = body.status if body?.status?
                 callback @status
     switchStatus:()->
-        #To be done    
+        #Todo be done    
     statistics:()->
+        #Todo
 
 #####################################################################################################
 
 module.exports = switches
+
+#Todo items:  HTTP Request json timeout, response code to be checked 
