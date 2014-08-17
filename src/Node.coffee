@@ -37,7 +37,7 @@ class node
 
 
 
-    addLanInterface :(brname, ipaddress, subnetmask, gateway) ->         
+    addLanInterface :(brname, ipaddress, subnetmask, gateway, characterstics) ->         
         interf =
             "ifname" : "eth#{@ifindex}"
             "hwAddress" : getHwAddress()
@@ -47,10 +47,11 @@ class node
             "gateway" : gateway if gateway?
             "type":"lan"
             "veth" : "veth_#{@config.name}_eth#{@ifindex}"
+            "config": characterstics
         @ifindex++
         @ifmap.push  interf
 
-    addWanInterface :(brname, ipaddress, subnetmask, gateway) ->         
+    addWanInterface :(brname, ipaddress, subnetmask, gateway , characterstics) ->         
         interf =
             "ifname" : "eth#{@ifindex}"
             "hwAddress" : getHwAddress()
@@ -60,6 +61,7 @@ class node
             "gateway" : gateway if gateway?
             "type":"wan"
             "veth" : "veth_#{@config.name}_eth#{@ifindex}"
+            "config": characterstics
         
         @ifindex++
         @ifmap.push  interf

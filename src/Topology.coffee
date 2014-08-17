@@ -367,7 +367,7 @@ class Topology
                     obj = @getNodeObjbyName(n.name)
                     if obj?
                         startaddress = temp.iparray[x++]
-                        obj.addLanInterface(val.switch, startaddress, temp.subnetMask)
+                        obj.addLanInterface(val.switch, startaddress, temp.subnetMask, null, val.config)
 
             if val.type is "wan"
                 temp = ipmgr.getFreeWanSubnet()
@@ -383,7 +383,7 @@ class Topology
                     obj = @getNodeObjbyName(n.name)
                     if obj?
                         startaddress = temp.iparray[x++]
-                        obj.addWanInterface(swname, startaddress, temp.subnetMask)
+                        obj.addWanInterface(swname, startaddress, temp.subnetMask, null, val.config)
 
         #Todo : Below functions (create) to be placed in asyn framework
         @createSwitches (res)=>
