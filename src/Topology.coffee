@@ -367,7 +367,9 @@ class Topology
                     obj = @getNodeObjbyName(n.name)
                     if obj?
                         startaddress = temp.iparray[x++]
-                        obj.addLanInterface(val.switch, startaddress, temp.subnetMask, null, val.config)
+                        obj.addLanInterface(val.switch, startaddress, temp.subnetMask, null, val.config) if obj.config.type is "router"
+                        obj.addLanInterface(val.switch, startaddress, temp.subnetMask, temp.iparray[0], val.config) if obj.config.type is "host"
+
 
             if val.type is "wan"
                 temp = ipmgr.getFreeWanSubnet()
