@@ -359,7 +359,7 @@ class Topology
             mgmtip = ipmgr.getFreeMgmtIP() 
             obj.addMgmtInterface mgmtip , '255.255.255.0'
             @nodeobj.push obj
-            
+        sindex = 1
         for val in @tdata.data.links                        
             x = 0
             if val.type is "lan"
@@ -374,7 +374,9 @@ class Topology
 
             if val.type is "wan"
                 temp = ipmgr.getFreeWanSubnet()
-                swname = "#{val.type}_#{val.connected_nodes[0].name}_#{val.connected_nodes[1].name}"
+                #swname = "#{val.type}_#{val.connected_nodes[0].name}_#{val.connected_nodes[1].name}"
+                swname = "#{val.type}_sw#{sindex}"
+                sindex++
                 util.log "  wan swname is "+ swname
                 obj = new switches
                     name : swname
