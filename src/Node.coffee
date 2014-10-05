@@ -36,7 +36,7 @@ class node
         @status = {}
 
 
-
+    
     addLanInterface :(brname, ipaddress, subnetmask, gateway, characterstics) ->         
         interf =
             "ifname" : "eth#{@ifindex}"
@@ -46,7 +46,7 @@ class node
             "netmask" : subnetmask
             "gateway" : gateway if gateway?
             "type":"lan"
-            "veth" : "veth_#{@config.name}_eth#{@ifindex}"
+            "veth" : "#{@config.name}_veth#{@ifindex}"
             "config": characterstics
         @ifindex++
         @ifmap.push  interf
@@ -60,7 +60,7 @@ class node
             "netmask" : subnetmask
             "gateway" : gateway if gateway?
             "type":"wan"
-            "veth" : "veth_#{@config.name}_eth#{@ifindex}"
+            "veth" : "#{@config.name}_veth#{@ifindex}"
             "config": characterstics
         
         @ifindex++

@@ -82,7 +82,7 @@ class switches
             unless body instanceof Error
                 @status.result = body.status if body?.status?
                 callback @status
-    switchStatus:()->
+    switchStatus:()->   
         #Todo be done    
     statistics:()->
         #Todo

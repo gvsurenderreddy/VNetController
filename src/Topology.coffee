@@ -61,8 +61,8 @@ class TopologyRegistry extends StormRegistry
 class TopologyData extends StormData
     TopologySchema =
         name: "Topology"
-        type: "object"
-        additionalProperties: true
+        type: "object"        
+        #additionalProperties: true
         properties:                        
             name: {type:"string", required:true}
             projectid: {type:"string", required:true}
@@ -73,7 +73,7 @@ class TopologyData extends StormData
                         name: "switch"
                         type: "object"
                         required: false
-                        additionalProperties: true
+                        #additionalProperties: true
                         properties:
                             name: {type:"string", required:false}            
                             type:  {type:"string", required:false}            
@@ -85,14 +85,14 @@ class TopologyData extends StormData
                         name: "node"
                         type: "object"
                         required: true
-                        additionalProperties: true
+                        #additionalProperties: true
                         properties:
                             name: {type:"string", required:true}            
                             type: {type:"string", required:false}
                             Services:
                                 type: "array"
                                 required: true
-                                additionalProperties: true
+                                #additionalProperties: true
                                 items:
                                     type: "object"
                                     required: true                                    
@@ -108,7 +108,7 @@ class TopologyData extends StormData
                         name: "node"
                         type: "object"
                         required: true
-                        additionalProperties: true
+                        #additionalProperties: true
                         properties:                
                             type: {type:"string", required:true}
                             switch: {type:"string", required:false}
@@ -119,7 +119,7 @@ class TopologyData extends StormData
                             connected_nodes:
                                 type: "array"
                                 required: true
-                                additionalProperties: true
+                                #additionalProperties: true
                                 items:
                                     type: "object"
                                     required: true                                    
@@ -349,9 +349,10 @@ class Topology
 
         ipmgr = new IPManager(@config.wansubnet,@config.lansubnet, @config.mgmtsubnet)
 
-        for sw in @tdata.data.switches   
-            obj = new switches(sw, @config.vnetbuilderip , @config.vnetprovisionerip)
-            @switchobj.push obj
+        if @tdata.data.switches?
+            for sw in @tdata.data.switches   
+                obj = new switches(sw, @config.vnetbuilderip , @config.vnetprovisionerip)
+                @switchobj.push obj
 
         for val in @tdata.data.nodes
             obj = new node(@tdata.data.projectid, val , @config.vnetbuilderip, @config.vnetprovisionerip )
