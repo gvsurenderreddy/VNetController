@@ -100,4 +100,39 @@
             @response.setHeader "Access-Control-Allow-Origin", "*"
             @send res    
 
+    #Service specific functions 
+    #To be implemented
+    ###
+   
+    @post '/Topology/:id/device/:did/quagga' 
+    @get '/Topology/:id/device/:did/quagga/:id' 
+    @put '/Topology/:id/device/:did/quagga/:id' 
+    @put '/Topology/:id/device/:did/quagga/:id/start'
+    @put '/Topology/:id/device/:did/quagga/:id/stop'
 
+    @post '/Topology/:id/device/:did/snort'
+    @get '/Topology/:id/device/:did/snort/:id'
+    @put '/Topology/:id/device/:did/snort/:id'
+    @put '/Topology/:id/device/:did/snort/:id/start'
+    @put '/Topology/:id/device/:did/snort/:id/stop'
+
+    @post '/Topology/:id/device/:did/iptables/'
+    @get '/Topology/:id/device/:did/iptables/:id'    
+    @put '/Topology/:id/device/:did/iptables/:id'
+    @put '/Topology/:id/device/:did/iptables/:id/start'
+    @put '/Topology/:id/device/:did/iptables/:id/stop'
+
+
+    @post '/Topology/:id/device/:did/openvpn/'
+    @get '/Topology/:id/device/:did/openvpn/:id'    
+    @put '/Topology/:id/device/:did/openvpn/:id'
+    @put '/Topology/:id/device/:did/openvpn/:id/start'
+    @put '/Topology/:id/device/:did/openvpn/:id/stop'
+
+    @post '/Topology/:id/device/:did/strongswan/'
+    @get '/Topology/:id/device/:did/strongswan/:id'    
+    @put '/Topology/:id/device/:did/strongswan/:id'
+    @put '/Topology/:id/device/:did/strongswan/:id/start'
+    @put '/Topology/:id/device/:did/strongswan/:id/stop'
+    
+    ###

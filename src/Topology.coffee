@@ -17,9 +17,9 @@ util = require 'util'
 authenticatorurl = "127.0.0.1:2222"
 
 ## Global IP Manager for  -- To be relooked the design
-MGMT_SUBNET = "10.0.3.0"
-WAN_SUBNET = "172.16.1.0"
-LAN_SUBNET = "10.10.10.0"
+#MGMT_SUBNET = "10.0.3.0"
+#WAN_SUBNET = "172.16.1.0"
+#LAN_SUBNET = "10.10.10.0"
 
 #Todo : 
 #Global MGMT_SUBNET  and WAN, LAN SUBNET per topology-  currently all 3 subnets are global.
@@ -636,14 +636,13 @@ module.exports =  new TopologyMaster '/tmp/topology.db'
 
 
 #Limitations ---  To be addressed later
-#1. vm name, bridge name is used as given in the REST API.  Hence there is a  possibility that node and bridge name already exists (VM may exists in the same name)
-#  No check in the code,  User should take care of the vmname and bridge name .
+#1. vm name is used as given in the REST API.  Hence there is a  possibility that node (VM may exists in the same name)
+#  No check in the code,  User should take care of the vmname name .
 #There is a limitation in the lxcname and vm name ---  Name should not exceed 5 chars
 #2. Application LOST the topology details upon restarts, it lost the existing topology object .
 #  Application doesnt  and poll the status of the existing topology and get the object.
-#3.  VNetBuilder & VnetProvisioner dynamic registration and capability negotiation ( Currently hardcoded URL for vnetbuilder & vnetcontroller is used)
 #4.   some code cleanup - wherever mentioned in the code.
 #5.   config file to read the port number for ventbuilder, ventprovisioner, venetcontroller and default port.. ?
-
+#6. secure communication to vnetbuilder and provisioner
 
 

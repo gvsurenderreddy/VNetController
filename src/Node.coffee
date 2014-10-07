@@ -6,8 +6,6 @@ extend = require('util')._extend
 ip = require 'ip'
 async = require 'async'
 
-#vnetbuilderurl = 'http://localhost:5680/'
-#vnetprovisionerurl = 'http://localhost:5671/'
 
 #utility functions 
 #Todo:  Not scalable....To be modified

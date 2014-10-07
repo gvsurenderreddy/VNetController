@@ -19,6 +19,8 @@ Request Data:
 ```
 { 
   "name":"testtopology", 
+  "projectid":"A1",
+  "passcode":"aaaa",
   "switches":[
     {
       "name":"lansw1",
@@ -49,7 +51,7 @@ Request Data:
           "config":{}
         },
         {
-          "name":"iptable",          
+          "name":"iptables",          
           "config":{}
         },
         {
@@ -78,7 +80,7 @@ Request Data:
           "config":{}
         }
       ]      
-    }                                                                                                                                                                       ,
+    },
     {
       "name":"server1",
       "type":"host",
@@ -88,8 +90,7 @@ Request Data:
           "config":{}
         }
       ]      
-    }
-    
+    }    
   ],
   "links":[
     {
@@ -131,76 +132,7 @@ Request Data:
 
 Response Data:
 ```
-{ 
-  "name":"testtopology", 
-  "switches":[
-    {
-      "name":"lansw1",
-      "ports":8,
-      "type":"bridge"     
-    }
-  ],  
-  "nodes":[
-    {
-      "name":"vm1",
-      "type":"router",
-      "Services":[
-        {
-          "name":"quagga",
-          "enabled":true
-        }
-      ]      
-    },
-    {
-      "name":"vm2",
-      "type":"router",
-      "Services":[
-        {
-          "name":"quagga",
-          "enabled":true
-        }
-      ]      
-    },
-    {
-      "name":"vm3",
-      "type":"router",
-      "Services":[
-        {
-          "name":"quagga",
-          "enabled":true
-        }
-      ]      
-    },
-    {
-      "name":"server1",
-      "type":"host",
-      "Services":[
-        {
-          "name":"webserver",
-          "enabled":true
-        }
-      ]      
-    }
-    
-  ],
-  "links":[
-    {
-      "type":"wan",
-      "connected_nodes":[{"name":"vm1"},{"name":"vm2"}],
-      "switch":""
-    },
-    {
-      "type":"wan",
-      "connected_nodes":[{"name":"vm2"},{"name":"vm3"}],
-      "switch":""
-    },
-    {
-      "type":"lan",
-      "connected_nodes":[{"name":"vm1"},{"name":"server1"}],
-      "switch":"lansw1"
-    }    
-    ]  
-}
+To be updated
 
 ```
 
