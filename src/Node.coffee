@@ -176,6 +176,7 @@ class node
             util.log "node provision result " + JSON.stringify body
             @status.result = body.status  if body?.status?
             @status.reason = body.reason if body?.reason?
+            @config.provision = body
             return callback body    
 
     provisionStatus : (callback)->

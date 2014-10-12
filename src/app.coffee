@@ -102,9 +102,19 @@
 
     #Service specific functions 
     #To be implemented
-    ###
-   
+    
+
+    @post '/Topology/:id/device/:did/service' 
+    @get '/Topology/:id/device/:did/service' 
+    @get '/Topology/:id/device/:did/service/:id' 
+    @put '/Topology/:id/device/:did/service/:id' 
+    @put '/Topology/:id/device/:did/service/:id/start'
+    @put '/Topology/:id/device/:did/service/:id/stop'
+
+
+    ###   
     @post '/Topology/:id/device/:did/quagga' 
+    @get '/Topology/:id/device/:did/quagga' 
     @get '/Topology/:id/device/:did/quagga/:id' 
     @put '/Topology/:id/device/:did/quagga/:id' 
     @put '/Topology/:id/device/:did/quagga/:id/start'
