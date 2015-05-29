@@ -50,6 +50,7 @@ class node
         @ifmap.push  interf
 
     addWanInterface :(brname, ipaddress, subnetmask, gateway , characterstics) ->         
+        console.log "inside addWanInterface function"
         interf =
             "ifname" : "eth#{@ifindex}"
             "hwAddress" : getHwAddress()
@@ -60,7 +61,7 @@ class node
             "type":"wan"
             "veth" : "#{@config.name}_veth#{@ifindex}"
             "config": characterstics
-        
+        console.log "waninterface " + interf
         @ifindex++
         @ifmap.push  interf
 

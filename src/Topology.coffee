@@ -143,11 +143,13 @@ class Topology
     # Object Iterator functions... Async each is used in many place.. hence cannot be removed currently.
     # To be converted in to Hash model.
     getNodeObjbyName:(name) ->
+        util.log "getNodeObjbyName - input " + name
         for obj in @nodeobj
-            util.log "getNodeObjbyName" + obj.config.name
+            util.log "getNodeObjbyName - checking with " + obj.config.name
             if obj.config.name is name
                 util.log "getNodeObjbyName found " + obj.config.name
                 return obj
+        util.log "getNodeObjbyName not found " + name
         return null
 
     getSwitchObjbyName:(name) ->
@@ -385,6 +387,7 @@ class Topology
                     make : val.make , @config.vnetbuilderip ,@config.vnetprovisionerip
                 @switchobj.push obj
                 for n in  val.connected_nodes
+                    util.log "updating wan interface for ", n.name
                     obj = @getNodeObjbyName(n.name)
                     if obj?
                         startaddress = temp.iparray[x++]
@@ -392,21 +395,21 @@ class Topology
 
         #Todo : Below functions (create) to be placed in asyn framework
         @createSwitches (res)=>
-            util.log "createswitches result" + res            
-
-        @createNodes (res)=>
-            util.log "topologycreation status" + res
-            #Check the sttatus and do provision
-            @createLinks (res)=>
-                util.log "create links result " + res
-
-                @startSwitches (res)=>
-                    util.log "start switches result "  + res
-                    util.log "Ready for provision"
-
-                    #provision
-                    @provisionNodes (res)=>
-                        util.log "provision" + res
+            util.log "createswitches result" + res   
+                     
+            @createNodes (res)=>
+                util.log "topologycreation status" + res
+                #Check the sttatus and do provision
+                @createLinks (res)=>
+                    util.log "create links result " + res
+        
+                    @startSwitches (res)=>
+                        util.log "start switches result "  + res
+                        util.log "Ready for provision"
+        
+                        #provision
+                        @provisionNodes (res)=>
+                            util.log "provision" + res
 
 
 

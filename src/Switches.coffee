@@ -23,13 +23,13 @@ class switches
         client.post '/switch', @config, (err, res, body) =>
             #Todo:  response to be checked before process.. (200 OK?)
             util.log "err" + JSON.stringify err if err?
-            util.log "create switches result " + JSON.stringify body
+            util.log "create result " + JSON.stringify body
             @uuid = body.id     
             #unless body instanceof Error
             #Error cases to be handled
             @status.result = body.status
             @status.reason = body.reason if body?.reason?
-            callback
+            callback @status
 
     del: (callback)->
         client = request.newClient(@config.vnetbuilderurl)
