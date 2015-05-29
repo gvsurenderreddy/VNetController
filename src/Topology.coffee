@@ -336,7 +336,7 @@ class Topology
         util.log "Topology create - topodata: " + JSON.stringify @tdata                       
         util.log "Topology create - projectdata: " + JSON.stringify @projectdata                       
 
-        @config = extend {}, tdata
+        @config = extend {}, @tdata
         @config = extend @config, @projectdata
         @uuid = @tdata.id
 

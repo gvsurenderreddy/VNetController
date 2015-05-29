@@ -14,6 +14,79 @@ creates a new Topology
 This API immediately returs with resource id. The resource creation will be in progress.
 Resource status can be checked with /Topology/:id/status API.
 
+simple topology
+
+request
+
+```
+{ 
+  "name":"testtopology", 
+  "projectid":"A5",
+  "passcode":"9160",
+  "switches":[],  
+  "nodes":[
+    {
+      "name":"v1",
+      "type":"router",
+      "Services":[]      
+    },
+    {
+      "name":"v2",
+      "type":"router",
+      "Services":[]      
+    }  
+  ],
+  "links":[
+    {
+      "type":"wan",
+      "connected_nodes":[{"name":"v1"},{"name":"v2"}]       
+    }       
+    ]  
+}
+ ```
+response
+```
+{
+    "id": "5fa10396-7bd3-4008-b6de-43e2e45e91a8",
+    "data": {
+        "name": "testtopology",
+        "projectid": "A5",
+        "passcode": "9160",
+        "switches": [],
+        "nodes": [
+            {
+                "name": "v1",
+                "type": "router",
+                "Services": []
+            },
+            {
+                "name": "v2",
+                "type": "router",
+                "Services": []
+            }
+        ],
+        "links": [
+            {
+                "type": "wan",
+                "connected_nodes": [
+                    {
+                        "name": "v1"
+                    },
+                    {
+                        "name": "v2"
+                    }
+                ]
+            }
+        ]
+    },
+    "saved": true
+}
+```
+
+
+
+
+complex topology
 
 Request Data:
 ```
